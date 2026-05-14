@@ -6,6 +6,9 @@ const fs = require("fs-extra");
 const path = require("path");
 
 require("dotenv").config();
+console.log(process.env.GOOGLE_CLIENT_ID);
+console.log(process.env.GOOGLE_CLIENT_SECRET);
+console.log(process.env.GOOGLE_REDIRECT);
 
 const app = express();
 
