@@ -1201,8 +1201,7 @@ function googleConectado() {
 function loginGoogle() {
 
   window.open(
-    "http://localhost:3000/google/login",
-    "_blank"
+  "https://assistente-jur-dico.onrender.com/google/login",
   );
 
   googleConectado();
@@ -1219,8 +1218,8 @@ async function carregarEventosGoogle() {
 
     const resposta =
       await fetch(
-        "http://localhost:3000/eventos"
-      );
+  "https://assistente-jur-dico.onrender.com/eventos"
+);
 
     eventosGoogle =
       await resposta.json();
