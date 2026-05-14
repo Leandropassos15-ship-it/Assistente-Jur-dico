@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Assistente Luzia
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- PRINCIPAL -->
+
+    <section class="principal">
+
+      <!-- TOPO -->
+
+      <div class="topo">
+
+        <div>
+
+          <div class="perfil">
+
+            <div class="foto">
+
+              <img
+                id="preview"
+                src=""
+              >
+
+            </div>
+
+            <div>
+
+              <h1>
+                NEGOSAFADO IA
+              </h1>
+
+              <p>
+                Seu Assistente jurídico inteligente
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <button
+  class="google-btn"
+  id="googleBtn"
+  onclick="loginGoogle()"
+>
+
+            Conectar Google Calendar
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- CARDS -->
+
+      <div class="cards">
+
+        <div class="card-topo">
+
+          <span>
+            Audiências
+          </span>
+
+          <h2 id="totalAudiencias">
+            0
+          </h2>
+
+        </div>
+
+        <div class="card-topo">
+
+          <span>
+            Próxima
+          </span>
+
+          <h2 id="proximaAudiencia">
+            --:--
+          </h2>
+
+        </div>
+
+        <div class="card-topo">
+
+          <span>
+            Finalizadas
+          </span>
+
+          <h2 id="finalizadas">
+            0
+          </h2>
+
+        </div>
+
+        <div class="card-topo">
+
+          <span>
+            Horário Atual
+          </span>
+
+          <h2 id="horarioAtual">
+            --:--
+          </h2>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- PAUTA -->
+
+      <div class="bloco">
+
+        <h3>
+          Audiências
+        </h3>
+
+        <textarea
+          id="pauta"
+          placeholder="Cole a pauta aqui"
+        ></textarea>
+
+        <button onclick="filtrarAudiencias()">
+          Filtrar Audiências
+        </button>
+
+      </div>
+
+
+
+      <!-- RESULTADOS -->
+
+      <div class="bloco">
+
+        <h3>
+          Lista de Audiências
+        </h3>
+
+        <input
+          type="text"
+          id="pesquisa"
+          placeholder="Pesquisar..."
+        >
+
+        <div id="resultado"></div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- IA -->
+
+    <aside class="ia">
+
+      <div class="bloco">
+        <div class="bloco tema-box">
+
+  <h3>
+    Personalizar Tema
+  </h3>
+
+  <label>
+    Cor Principal
+  </label>
+
+  <input
+    type="color"
+    id="corPrincipal"
+    value="#7c3aed"
+  >
+
+  <label>
+    Fundo Principal
+  </label>
+
+  <input
+    type="color"
+    id="corFundo1"
+    value="#0f172a"
+  >
+
+  <label>
+    Fundo Secundário
+  </label>
+
+  <input
+    type="color"
+    id="corFundo2"
+    value="#111827"
+  >
+
+  <label>
+    Cor dos Cards
+  </label>
+
+  <input
+    type="color"
+    id="corGlass"
+    value="#1e293b"
+  >
+
+</div>
+
+  <h3>
+    Personalizar Tema
+  </h3>
+
+  <input
+    type="color"
+    id="corTema"
+    value="#7c3aed"
+  >
+
+</div>
+
+        <h3>
+          Assistente IA
+        </h3>
+
+        <input
+          type="text"
+          id="perguntaIA"
+          placeholder="Pergunte algo..."
+        >
+
+        <button onclick="perguntarIA()">
+          Perguntar
+        </button>
+
+        <div
+          class="resposta"
+          id="respostaIA"
+        >
+
+          Tudo pronto 😄
+
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
