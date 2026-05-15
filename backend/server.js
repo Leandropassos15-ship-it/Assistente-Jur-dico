@@ -18,7 +18,11 @@ const TOKEN_PATH =
     __dirname,
     "tokens",
     "google-token.json"
-  );
+  ); 
+  
+  fs.ensureDirSync(
+  path.join(__dirname, "tokens")
+);
 
 /* =========================
    GOOGLE OAUTH
