@@ -110,11 +110,16 @@ app.get("/google/callback", async (req, res) => {
 
   catch (erro) {
 
-    console.log(erro);
+  console.log(erro);
 
-    res.send(
-      "Erro ao conectar Google"
-    ); /* =========================
+  res.status(500).json({
+
+    erro:
+      "Erro ao buscar eventos"
+
+  });
+
+} /* =========================
    EVENTOS CALENDAR
 ========================= */
 
