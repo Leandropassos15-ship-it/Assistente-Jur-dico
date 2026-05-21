@@ -756,4 +756,39 @@ button:hover {
 
   cursor: pointer;
 
+} /* =========================
+   ANOTAÇÕES
+========================= */
+
+.anotacoes-box {
+
+  margin-top: 15px;
+
+}
+
+.anotacoes {
+
+  width: 100%;
+
+  min-height: 90px;
+
+  margin-top: 8px;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  border: none;
+
+  resize: vertical;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  color: white;
+
+  font-size: 14px;
+
+  outline: none;
+
 }

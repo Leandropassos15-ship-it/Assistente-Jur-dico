@@ -1,26 +1,27 @@
 const express = require("express");
 const cors = require("cors");
 const { google } = require("googleapis");
-
 const fs = require("fs-extra");
 const path = require("path");
 
 require("dotenv").config();
-console.log(process.env.GOOGLE_CLIENT_ID);
-console.log(process.env.GOOGLE_CLIENT_SECRET);
-console.log(process.env.GOOGLE_REDIRECT);
 
 const app = express();
 
 app.use(cors());
+
+/* =========================
+   TOKEN
+========================= */
+
 const TOKEN_PATH =
   path.join(
     __dirname,
     "tokens",
     "google-token.json"
-  ); 
-  
-  fs.ensureDirSync(
+  );
+
+fs.ensureDirSync(
   path.join(__dirname, "tokens")
 );
 
@@ -45,7 +46,9 @@ const oauth2Client =
 
 app.get("/", (req, res) => {
 
-  res.send("Assistente Luzia API");
+  res.send(
+    "Assistente Luzia API 😄"
+  );
 
 });
 
@@ -59,6 +62,8 @@ app.get("/google/login", (req, res) => {
     oauth2Client.generateAuthUrl({
 
       access_type: "offline",
+
+      prompt: "consent",
 
       scope: [
         "https://www.googleapis.com/auth/calendar.readonly"
@@ -76,18 +81,23 @@ app.get("/google/login", (req, res) => {
 
 app.get("/google/callback", async (req, res) => {
 
-  console.log("CALLBACK GOOGLE OK");
+  console.log(
+    "CALLBACK GOOGLE OK"
+  );
 
   try {
 
-    const code = req.query.code;
+    const code =
+      req.query.code;
 
     const { tokens } =
-      await oauth2Client.getToken(code);
+      await oauth2Client.getToken(
+        code
+      );
 
-      console.log(tokens);
-
-    oauth2Client.setCredentials(tokens);
+    oauth2Client.setCredentials(
+      tokens
+    );
 
     await fs.writeJson(
       TOKEN_PATH,
@@ -110,170 +120,187 @@ app.get("/google/callback", async (req, res) => {
 
   catch (erro) {
 
-  console.log(erro);
-
-  res.status(500).json({
-
-    erro:
-      "Erro ao buscar eventos"
-
-  });
-
-} /* =========================
-   EVENTOS CALENDAR
-========================= */
-
-app.get("/eventos", async (req, res) => {
-
-  try {
-
-    const calendar =
-      google.calendar({
-
-        version: "v3",
-        auth: oauth2Client
-
-      });
-
-    const hoje = new Date();
-
-    const inicioDoDia =
-      new Date(
-        hoje.setHours(0, 0, 0, 0)
-      );
-
-    const fimDoDia =
-      new Date(
-        hoje.setHours(23, 59, 59, 999)
-      );
-
-    const resposta =
-      await calendar.events.list({
-
-        calendarId: "primary",
-
-        timeMin:
-          inicioDoDia.toISOString(),
-
-        timeMax:
-          fimDoDia.toISOString(),
-
-        singleEvents: true,
-
-        orderBy: "startTime"
-
-      });
-
-    const eventos =
-      resposta.data.items.map((evento) => ({
-
-        titulo:
-          evento.summary,
-
-        inicio:
-          evento.start.dateTime,
-
-        link:
-          evento.hangoutLink || ""
-
-      }));
-
-    res.json(eventos);
-
-  }
-
-  catch (erro) {
-
     console.log(erro);
 
-    res.status(500).send(
-      "Erro ao buscar eventos"
-    );
+    res.status(500).json({
 
-  }
+      erro:
+        "Erro ao conectar Google"
 
-});
-
-  }
-
-}); /* =========================
-   EVENTOS CALENDAR
-========================= */
-
-app.get("/eventos", async (req, res) => {
-
-  try {
-
-    const calendar =
-      google.calendar({
-
-        version: "v3",
-        auth: oauth2Client
-
-      });
-
-    const hoje = new Date();
-
-    const inicioDoDia =
-      new Date(
-        hoje.setHours(0, 0, 0, 0)
-      );
-
-    const fimDoDia =
-      new Date(
-        hoje.setHours(23, 59, 59, 999)
-      );
-
-    const resposta =
-      await calendar.events.list({
-
-        calendarId: "primary",
-
-        timeMin:
-          inicioDoDia.toISOString(),
-
-        timeMax:
-          fimDoDia.toISOString(),
-
-        singleEvents: true,
-
-        orderBy: "startTime"
-
-      });
-
-    const eventos =
-      resposta.data.items.map((evento) => ({
-
-        titulo:
-          evento.summary,
-
-        inicio:
-          evento.start.dateTime,
-
-        link:
-          evento.hangoutLink || ""
-
-      }));
-
-    res.json(eventos);
-
-  }
-
-  catch (erro) {
-
-    console.log(erro);
-
-    res.status(500).send(
-      "Erro ao buscar eventos"
-    );
+    });
 
   }
 
 });
 
 /* =========================
-   SERVIDOR
+   EVENTOS CALENDAR
 ========================= */
+
+app.get("/eventos", async (req, res) => {
+
+  try {
+
+    const existe =
+      await fs.pathExists(
+        TOKEN_PATH
+      );
+
+    if (!existe) {
+
+      return res.json([]);
+
+    }
+
+    const tokens =
+      await fs.readJson(
+        TOKEN_PATH
+      );
+
+    oauth2Client.setCredentials(
+      tokens
+    );
+
+    const calendar =
+      google.calendar({
+
+        version: "v3",
+
+        auth: oauth2Client
+
+      });
+
+    const hoje =
+      new Date();
+
+    const inicioDoDia =
+      new Date();
+
+    inicioDoDia.setHours(
+      0,
+      0,
+      0,
+      0
+    );
+
+    const fimDoDia =
+      new Date();
+
+    fimDoDia.setHours(
+      23,
+      59,
+      59,
+      999
+    );
+
+    const resposta =
+      await calendar.events.list({
+
+        calendarId: "primary",
+
+        timeMin:
+          inicioDoDia.toISOString(),
+
+        timeMax:
+          fimDoDia.toISOString(),
+
+        singleEvents: true,
+
+        orderBy: "startTime"
+
+      });
+
+    const eventos =
+      resposta.data.items.map(
+        (evento) => ({
+
+          titulo:
+            evento.summary || "",
+
+          inicio:
+            evento.start.dateTime ||
+
+            evento.start.date,
+
+          link:
+            evento.hangoutLink || ""
+
+        })
+      );
+
+    res.json(eventos);
+
+  }
+
+  catch (erro) {
+
+    console.log(erro);
+
+    res.status(500).json({
+
+      erro:
+        "Erro ao buscar eventos"
+
+    });
+
+  }
+
+});
+
+/* =========================
+   USUÁRIO GOOGLE
+========================= */
+
+app.get("/usuario", async (req, res) => {
+
+  try {
+
+    const oauth2 =
+      google.oauth2({
+
+        auth: oauth2Client,
+
+        version: "v2"
+
+      });
+
+    const usuario =
+      await oauth2.userinfo.get();
+
+    res.json({
+
+      nome:
+        usuario.data.name,
+
+      email:
+        usuario.data.email,
+
+      foto:
+        usuario.data.picture
+
+    });
+
+  }
+
+  catch (erro) {
+
+    console.log(erro);
+
+    res.status(500).json({
+
+      erro:
+        "Erro ao buscar usuário"
+
+    });
+
+  }
+
+});
+
+/* =========================
+   CARREGAR TOKEN SALVO
+========================= */
+
 async function carregarTokenSalvo() {
 
   const existe =
@@ -307,54 +334,15 @@ async function carregarTokenSalvo() {
 }
 
 carregarTokenSalvo();
+
 /* =========================
-   USUÁRIO GOOGLE
+   SERVIDOR
 ========================= */
 
-app.get("/usuario", async (req, res) => {
-
-  try {
-
-    const oauth2 =
-      google.oauth2({
-
-        auth: oauth2Client,
-        version: "v2"
-      });
-
-    const usuario =
-      await oauth2.userinfo.get();
-
-    res.json({
-
-      nome:
-        usuario.data.name,
-
-      email:
-        usuario.data.email,
-
-      foto:
-        usuario.data.picture
-
-    });
-
-  }
-
-  catch (erro) {
-
-    console.log(erro);
-
-    res.status(500).send(
-      "Erro ao buscar usuário"
-    );
-
-  }
-
-});
 app.listen(3000, () => {
 
   console.log(
-    "Servidor rodando na porta 3000"
+    "Servidor rodando na porta 3000 😄"
   );
 
 });

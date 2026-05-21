@@ -8,8 +8,6 @@ let eventosGoogle = [];
 
 let notificacoesEnviadas = [];
 
-
-
 /* =========================
    FILTRAR AUDIÊNCIAS
 ========================= */
@@ -21,27 +19,44 @@ function filtrarAudiencias() {
       .getElementById("pauta")
       .value;
 
-
+  localStorage.setItem(
+    "pauta",
+    texto
+  );
 
   const linhas =
     texto.split("\n");
 
+  /* =========================
+     PEGAR DATA DA PAUTA
+  ========================= */
 
+  const dataPautaMatch =
+    texto.match(
+      /\d{2}\/\d{2}/
+    );
+
+  const dataPauta =
+
+    dataPautaMatch
+
+    ?
+
+    dataPautaMatch[0]
+
+    :
+
+    null;
 
   audiencias = [];
-
-
 
   linhas.forEach((linhaOriginal) => {
 
     let linha =
       linhaOriginal.trim();
 
-
-
-    if (!linha) return;
-
-
+    if (!linha)
+      return;
 
     linha = linha
 
@@ -53,74 +68,50 @@ function filtrarAudiencias() {
 
       .trim();
 
-
-
     const horarioMatch =
       linha.match(/\d{2}:\d{2}/);
-
-
 
     if (!horarioMatch)
       return;
 
-
-
     const horario =
       horarioMatch[0];
-
-
 
     const linkMatch =
       linha.match(
         /(https?:\/\/[^\s]+)/gi
       );
 
-
-
     const link =
       linkMatch
         ? linkMatch[0]
         : "";
-
-
 
     linha = linha.replace(
       /^\d+\.\s*/,
       ""
     );
 
-
-
     linha = linha.replace(
       horario,
       ""
     ).trim();
 
-
-
     const indexTraco =
       linha.indexOf("-");
 
-
-
     if (indexTraco === -1)
       return;
-
-
 
     const processo =
       linha
         .substring(0, indexTraco)
         .trim();
 
-
-
     const participantes =
       linha
         .substring(indexTraco + 1)
         .trim();
-
-
 
     /* SOMENTE LUZIA */
 
@@ -136,38 +127,32 @@ function filtrarAudiencias() {
 
     }
 
-
-
     const lados =
       processo.split(/ x /i);
-
-
 
     const empresa =
       lados[0]
         ? lados[0].trim()
         : "Não encontrado";
 
-
-
     const cliente =
       lados[1]
         ? lados[1].trim()
         : "Não encontrado";
 
-
-
     const status =
       calcularStatus(
+        dataPauta,
         horario
       );
-
-
 
     audiencias.push({
 
       id:
         Date.now() + Math.random(),
+
+      data:
+        dataPauta,
 
       horario,
 
@@ -186,27 +171,33 @@ function filtrarAudiencias() {
       finalizada: false,
 
       descricao:
-
         `${empresa} x ${cliente}`,
 
-      link
+      link,
+
+      anotacoes: ""
 
     });
 
   });
 
+  ordenarAudiencias();
 
+  vincularEventosGoogle();
 
- ordenarAudiencias();
+  atualizarCards();
 
-vincularEventosGoogle();
+  mostrarAudiencias();
 
-atualizarCards();
+  localStorage.setItem(
 
-mostrarAudiencias();
+    "audiencias",
+
+    JSON.stringify(audiencias)
+
+  );
+
 }
-
-
 
 /* =========================
    ORDENAR
@@ -224,44 +215,55 @@ function ordenarAudiencias() {
 
 }
 
-
-
 /* =========================
    STATUS
 ========================= */
 
-function calcularStatus(horario) {
+function calcularStatus(data, horario) {
+
+  if (!data)
+    return {
+
+      texto: "Sem data",
+
+      classe: "normal"
+
+    };
 
   const agora =
     new Date();
 
+  const [dia, mes] =
+    data.split("/");
 
-
-  const agoraMin =
-
-    agora.getHours() * 60 +
-
-    agora.getMinutes();
-
-
+  const ano =
+    new Date().getFullYear();
 
   const [h, m] =
     horario.split(":");
 
+  const dataAudiencia =
+    new Date(
 
+      ano,
 
-  const audMin =
+      mes - 1,
 
-    parseInt(h) * 60 +
+      dia,
 
-    parseInt(m);
+      h,
 
+      m
 
+    );
 
   const diff =
-    audMin - agoraMin;
 
+    (
 
+      dataAudiencia - agora
+
+    ) / 60000;
 
   if (diff < 0) {
 
@@ -275,8 +277,6 @@ function calcularStatus(horario) {
 
   }
 
-
-
   if (diff <= 15) {
 
     return {
@@ -288,8 +288,6 @@ function calcularStatus(horario) {
     };
 
   }
-
-
 
   if (diff <= 60) {
 
@@ -303,8 +301,6 @@ function calcularStatus(horario) {
 
   }
 
-
-
   return {
 
     texto: "Ainda distante",
@@ -314,8 +310,6 @@ function calcularStatus(horario) {
   };
 
 }
-
-
 
 /* =========================
    MOSTRAR AUDIÊNCIAS
@@ -328,11 +322,7 @@ function mostrarAudiencias(lista = audiencias) {
       "resultado"
     );
 
-
-
   resultado.innerHTML = "";
-
-
 
   if (lista.length === 0) {
 
@@ -354,8 +344,6 @@ function mostrarAudiencias(lista = audiencias) {
 
   }
 
-
-
   const grupos = {
 
     manha: [],
@@ -366,16 +354,12 @@ function mostrarAudiencias(lista = audiencias) {
 
   };
 
-
-
   lista.forEach((item) => {
 
     const hora =
       parseInt(
         item.horario.split(":")[0]
       );
-
-
 
     if (hora < 12) {
 
@@ -397,21 +381,15 @@ function mostrarAudiencias(lista = audiencias) {
 
   });
 
-
-
   renderGrupo(
     "MANHÃ",
     grupos.manha
   );
 
-
-
   renderGrupo(
     "TARDE",
     grupos.tarde
   );
-
-
 
   renderGrupo(
     "NOITE",
@@ -419,8 +397,6 @@ function mostrarAudiencias(lista = audiencias) {
   );
 
 }
-
-
 
 /* =========================
    RENDER GRUPO
@@ -436,22 +412,14 @@ function renderGrupo(
       "resultado"
     );
 
-
-
   if (itens.length === 0)
     return;
-
-
 
   const tituloDiv =
     document.createElement("div");
 
-
-
   tituloDiv.className =
     "periodo";
-
-
 
   tituloDiv.innerHTML = `
 
@@ -463,25 +431,17 @@ function renderGrupo(
 
   `;
 
-
-
   resultado.appendChild(
     tituloDiv
   );
-
-
 
   itens.forEach((item) => {
 
     const div =
       document.createElement("div");
 
-
-
     div.className =
       `audiencia ${item.classe}`;
-
-
 
     div.innerHTML = `
 
@@ -507,8 +467,6 @@ function renderGrupo(
 
       </div>
 
-
-
       <div class="conteudo-audiencia">
 
         <p>
@@ -521,8 +479,6 @@ function renderGrupo(
 
         </p>
 
-
-
         <p>
 
           <strong>
@@ -532,8 +488,6 @@ function renderGrupo(
           ${item.participantes}
 
         </p>
-
-
 
         <p>
 
@@ -545,8 +499,6 @@ function renderGrupo(
 
         </p>
 
-
-
         <p>
 
           <strong>
@@ -557,38 +509,20 @@ function renderGrupo(
 
         </p>
 
+        <div class="anotacoes-box">
 
+          <strong>
+            Anotações:
+          </strong>
 
-        ${
+          <textarea
+            class="anotacoes"
+            placeholder="Digite suas anotações..."
+            onclick="event.stopPropagation()"
+            oninput="salvarAnotacao('${item.id}', this.value)"
+          >${item.anotacoes || ""}</textarea>
 
-          item.link
-
-          ?
-
-          `
-
-          <a
-            href="${item.link}"
-            target="_blank"
-          >
-
-            <button>
-
-              Entrar na Chamada
-
-            </button>
-
-          </a>
-
-          `
-
-          :
-
-          ""
-
-        }
-
-
+        </div>
 
         <button
           class="btn-finalizar"
@@ -615,10 +549,6 @@ function renderGrupo(
 
     `;
 
-
-
-    /* CLICK */
-
     div.addEventListener(
       "click",
       (e) => {
@@ -633,20 +563,21 @@ function renderGrupo(
           e.target.tagName ===
             "A"
 
+          ||
+
+          e.target.tagName ===
+            "TEXTAREA"
+
         ) {
 
           return;
 
         }
 
-
-
         const abertas =
           document.querySelectorAll(
             ".audiencia.aberta"
           );
-
-
 
         abertas.forEach((card) => {
 
@@ -660,8 +591,6 @@ function renderGrupo(
 
         });
 
-
-
         div.classList.toggle(
           "aberta"
         );
@@ -669,15 +598,11 @@ function renderGrupo(
       }
     );
 
-
-
     resultado.appendChild(div);
 
   });
 
 }
-
-
 
 /* =========================
    FINALIZAR
@@ -692,24 +617,16 @@ function toggleFinalizada(id) {
 
     );
 
-
-
   if (!audiencia)
     return;
 
-
-
   audiencia.finalizada =
     !audiencia.finalizada;
-
-
 
   if (audiencia.finalizada) {
 
     audiencia.status =
       "Finalizada";
-
-
 
     audiencia.classe =
       "passada";
@@ -720,30 +637,31 @@ function toggleFinalizada(id) {
 
     const status =
       calcularStatus(
+        audiencia.data,
         audiencia.horario
       );
 
-
-
     audiencia.status =
       status.texto;
-
-
 
     audiencia.classe =
       status.classe;
 
   }
 
+  localStorage.setItem(
 
+    "audiencias",
+
+    JSON.stringify(audiencias)
+
+  );
 
   atualizarCards();
 
   mostrarAudiencias();
 
 }
-
-
 
 /* =========================
    CARDS
@@ -756,37 +674,39 @@ function atualizarCards() {
   ).innerText =
     audiencias.length;
 
+  const agora =
+    new Date();
 
+  const proxima =
+    audiencias.find((a) => {
 
-const agora =
-  new Date();
+      if (a.finalizada)
+        return false;
 
-const agoraMin =
+      const [dia, mes] =
+        a.data.split("/");
 
-  agora.getHours() * 60 +
+      const [h, m] =
+        a.horario.split(":");
 
-  agora.getMinutes();
+      const dataAudiencia =
+        new Date(
 
-const proxima =
-  audiencias.find((a) => {
+          agora.getFullYear(),
 
-    if (a.finalizada)
-      return false;
+          mes - 1,
 
-    const [h, m] =
-      a.horario.split(":");
+          dia,
 
-    const audMin =
+          h,
 
-      parseInt(h) * 60 +
+          m
 
-      parseInt(m);
+        );
 
-    return audMin >= agoraMin;
+      return dataAudiencia >= agora;
 
-  });
-
-
+    });
 
   document.getElementById(
     "proximaAudiencia"
@@ -795,8 +715,6 @@ const proxima =
     proxima
       ? proxima.horario
       : "--:--";
-
-
 
   document.getElementById(
     "finalizadas"
@@ -810,8 +728,6 @@ const proxima =
 
 }
 
-
-
 /* =========================
    RELÓGIO
 ========================= */
@@ -820,8 +736,6 @@ function atualizarHorario() {
 
   const agora =
     new Date();
-
-
 
   const hora =
     agora.toLocaleTimeString(
@@ -835,22 +749,16 @@ function atualizarHorario() {
       }
     );
 
-
-
   document.getElementById(
     "horarioAtual"
   ).innerText = hora;
 
 }
 
-
-
 setInterval(
   atualizarHorario,
   1000
 );
-
-
 
 /* =========================
    IA
@@ -866,14 +774,10 @@ function perguntarIA() {
       .value
       .toLowerCase();
 
-
-
   const resposta =
     document.getElementById(
       "respostaIA"
     );
-
-
 
   if (
 
@@ -895,8 +799,6 @@ function perguntarIA() {
 
   }
 
-
-
   if (
 
     pergunta.includes(
@@ -914,8 +816,6 @@ function perguntarIA() {
 
       ).length;
 
-
-
     resposta.innerHTML = `
 
       Existem
@@ -928,8 +828,6 @@ function perguntarIA() {
 
   }
 
-
-
   resposta.innerHTML = `
 
     Ainda estou aprendendo 😄
@@ -937,8 +835,6 @@ function perguntarIA() {
   `;
 
 }
-
-
 
 /* =========================
    NOTIFICAÇÕES
@@ -949,40 +845,39 @@ function verificarAudiencias() {
   const agora =
     new Date();
 
-
-
-  const agoraMin =
-
-    agora.getHours() * 60 +
-
-    agora.getMinutes();
-
-
-
   audiencias.forEach((item) => {
 
     if (item.finalizada)
       return;
 
-
+    const [dia, mes] =
+      item.data.split("/");
 
     const [h, m] =
       item.horario.split(":");
 
+    const dataAudiencia =
+      new Date(
 
+        agora.getFullYear(),
 
-    const min =
+        mes - 1,
 
-      parseInt(h) * 60 +
+        dia,
 
-      parseInt(m);
+        h,
 
+        m
 
+      );
 
     const diff =
-      min - agoraMin;
 
+      (
 
+        dataAudiencia - agora
+
+      ) / 60000;
 
     if (
 
@@ -1004,14 +899,12 @@ function verificarAudiencias() {
         item.id
       );
 
-
-
       mostrarNotificacao(`
 
         <strong>
 
           Audiência em
-          ${diff}
+          ${Math.floor(diff)}
           minuto(s)
 
         </strong>
@@ -1028,15 +921,11 @@ function verificarAudiencias() {
 
 }
 
-
-
 setInterval(() => {
 
   verificarAudiencias();
 
 }, 30000);
-
-
 
 /* =========================
    NOTIFICAÇÃO VISUAL
@@ -1049,19 +938,13 @@ function mostrarNotificacao(texto) {
       "notificacao"
     );
 
-
-
   if (!notif) {
 
     notif =
       document.createElement("div");
 
-
-
     notif.id =
       "notificacao";
-
-
 
     document.body.appendChild(
       notif
@@ -1069,21 +952,13 @@ function mostrarNotificacao(texto) {
 
   }
 
-
-
   notif.innerHTML = texto;
-
-
 
   notif.classList.add(
     "mostrar"
   );
 
-
-
   tocarSom();
-
-
 
   setTimeout(() => {
 
@@ -1094,8 +969,6 @@ function mostrarNotificacao(texto) {
   }, 5000);
 
 }
-
-
 
 /* =========================
    SOM
@@ -1113,74 +986,50 @@ function tocarSom() {
 
     )();
 
-
-
   const oscillator =
     audioContext.createOscillator();
-
-
 
   const gainNode =
     audioContext.createGain();
 
-
-
   oscillator.type =
     "sine";
-
-
 
   oscillator.frequency.setValueAtTime(
     880,
     audioContext.currentTime
   );
 
-
-
   gainNode.gain.setValueAtTime(
     0.0001,
     audioContext.currentTime
   );
-
-
 
   gainNode.gain.exponentialRampToValueAtTime(
     0.12,
     audioContext.currentTime + 0.01
   );
 
-
-
   gainNode.gain.exponentialRampToValueAtTime(
     0.0001,
     audioContext.currentTime + 0.8
   );
 
-
-
   oscillator.connect(
     gainNode
   );
-
-
 
   gainNode.connect(
     audioContext.destination
   );
 
-
-
   oscillator.start();
-
-
 
   oscillator.stop(
     audioContext.currentTime + 0.8
   );
 
 }
-
-
 
 /* =========================
    GOOGLE
@@ -1201,10 +1050,8 @@ function googleConectado() {
 function loginGoogle() {
 
   window.open(
-  "https://assistente-jur-dico.onrender.com/google/login",
+    "https://assistente-jur-dico.onrender.com/google/login"
   );
-
-  googleConectado();
 
 }
 
@@ -1218,8 +1065,8 @@ async function carregarEventosGoogle() {
 
     const resposta =
       await fetch(
-  "https://assistente-jur-dico.onrender.com/eventos"
-);
+        "https://assistente-jur-dico.onrender.com/eventos"
+      );
 
     eventosGoogle =
       await resposta.json();
@@ -1341,6 +1188,11 @@ corPrincipal.addEventListener(
         e.target.value
       );
 
+    localStorage.setItem(
+      "corPrincipal",
+      e.target.value
+    );
+
   }
 );
 
@@ -1355,7 +1207,10 @@ corFundo1.addEventListener(
         "--fundo1",
         e.target.value
       );
-
+    localStorage.setItem(
+  "corFundo1",
+  e.target.value
+);
   }
 );
 
@@ -1370,7 +1225,10 @@ corFundo2.addEventListener(
         "--fundo2",
         e.target.value
       );
-
+    localStorage.setItem(
+  "corFundo2",
+  e.target.value
+);
   }
 );
 
@@ -1391,7 +1249,10 @@ corGlass.addEventListener(
         "--glass",
         `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`
       );
-
+    localStorage.setItem(
+  "corGlass",
+  e.target.value
+);
   }
 );
 
@@ -1419,6 +1280,151 @@ function hexToRgb(hex) {
   };
 
 }
+
+/* =========================
+   ANOTAÇÕES
+========================= */
+
+function salvarAnotacao(id, texto) {
+
+  const audiencia =
+    audiencias.find((a) =>
+
+      a.id == id
+
+    );
+
+  if (!audiencia)
+    return;
+
+  audiencia.anotacoes =
+    texto;
+
+  localStorage.setItem(
+
+    "audiencias",
+
+    JSON.stringify(audiencias)
+
+  );
+
+}
+
+/* =========================
+   RESTAURAR DADOS
+========================= */
+
+const pautaSalva =
+  localStorage.getItem(
+    "pauta"
+  );
+
+if (pautaSalva) {
+
+  document.getElementById(
+    "pauta"
+  ).value = pautaSalva;
+
+}
+
+const audienciasSalvas =
+  localStorage.getItem(
+    "audiencias"
+  );
+
+if (audienciasSalvas) {
+
+  audiencias =
+    JSON.parse(
+      audienciasSalvas
+    );
+
+  atualizarCards();
+
+  mostrarAudiencias();
+
+} 
+/* =========================
+   RESTAURAR TEMA
+========================= */
+
+const corPrincipalSalva =
+  localStorage.getItem(
+    "corPrincipal"
+  );
+
+if (corPrincipalSalva) {
+
+  document.documentElement
+    .style.setProperty(
+      "--roxo",
+      corPrincipalSalva
+    );
+
+  corPrincipal.value =
+    corPrincipalSalva;
+
+}
+
+const corFundo1Salva =
+  localStorage.getItem(
+    "corFundo1"
+  );
+
+if (corFundo1Salva) {
+
+  document.documentElement
+    .style.setProperty(
+      "--fundo1",
+      corFundo1Salva
+    );
+
+  corFundo1.value =
+    corFundo1Salva;
+
+}
+
+const corFundo2Salva =
+  localStorage.getItem(
+    "corFundo2"
+  );
+
+if (corFundo2Salva) {
+
+  document.documentElement
+    .style.setProperty(
+      "--fundo2",
+      corFundo2Salva
+    );
+
+  corFundo2.value =
+    corFundo2Salva;
+
+}
+
+const corGlassSalva =
+  localStorage.getItem(
+    "corGlass"
+  );
+
+if (corGlassSalva) {
+
+  const rgb =
+    hexToRgb(
+      corGlassSalva
+    );
+
+  document.documentElement
+    .style.setProperty(
+      "--glass",
+      `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`
+    );
+
+  corGlass.value =
+    corGlassSalva;
+
+}
+
 atualizarHorario();
 
 carregarEventosGoogle();
